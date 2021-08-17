@@ -36,7 +36,7 @@ class Posts extends REST_Controller
                 $this->response(['errors' => 'Post not found'], REST_Controller::HTTP_UNPROCESSABLE_ENTITY);
             }
         } else {
-            $pagination = $this->paginate(generate_url('posts'), get_total_post_count());
+            $pagination = $this->paginate(generate_url('api-posts'), get_total_post_count());
             $data = get_cached_data('posts_page_' . $pagination['current_page']);
             if (empty($data)) {
                 $data = $this->post_model->get_paginated_posts($pagination['offset'], $pagination['per_page']);
@@ -103,12 +103,12 @@ class Posts extends REST_Controller
             }
             //set paginated
             $pagination = $this->paginate(generate_category_url($category), $total_rows);
-            $data['pagination'] = $pagination;
             $data['posts'] = get_cached_data($posts_key . '_page' . $pagination['current_page']);
             if (empty($data['posts'])) {
-                $data['posts'] = $this->post_model->get_paginated_category_posts($category->id, $pagination['offset'], $pagination['per_page']);
+                $data['posts'] = $this->post_model->get_paginated_category_posts($category->id, 1, 1);
                 set_cache_data($posts_key . '_page' . $pagination['current_page'], $data['posts']);
             }
+            $data['pagination'] = $pagination;
 
 
             $this->response(['data' => $data], REST_Controller::HTTP_OK);
@@ -141,6 +141,23 @@ class Posts extends REST_Controller
     {
             $data = $this->post_model->get_breaking_news();
             $this->response(['data' => $data], REST_Controller::HTTP_OK);
+    }
+    public function posts_by_tags_get($tag_slug)
+    {
+        $tag_slug = clean_slug($tag_slug);
+        $data['tag'] = $this->tag_model->get_tag($tag_slug);
+        //check tag exists
+        if (empty($data['tag'])) {
+            redirect(lang_base_url());
+        }
+        $data['title'] = $data['tag']->tag;
+        $data['description'] = trans("tag") . ': ' . $data['tag']->tag;
+        $data['keywords'] = trans("tag") . ', ' . $data['tag']->tag;
+        //set paginated
+        $pagination = $this->paginate(generate_tag_url($tag_slug), $this->post_model->get_post_count_by_tag($tag_slug));
+        $data['posts'] = $this->post_model->get_paginated_tag_posts($tag_slug, $pagination['offset'], $pagination['per_page']);
+
+        $this->response(['data' => $data, 'pagination' => $pagination], REST_Controller::HTTP_OK);
     }
 
     /**

@@ -66,6 +66,7 @@ $route['api-posts']['GET'] = 'api/posts/index';
 $route['api-popular-posts']['GET'] = 'api/posts/popular_posts';
 $route['api-breaking-news']['GET'] = 'api/posts/breaking_news';
 $route['api-posts/(:any)']['GET'] = 'api/posts/index/$1';
+$route['api-posts-by-tag/(:any)']['GET'] = 'api/posts/posts_by_tags/$1';
 $route['api-posts/category/(:any)']['GET'] = 'api/posts/post_by_category/$1';
 $route['api-posts/category/(:any)/subcategory/(:any)']['GET'] = 'api/posts/subcategory/$1/$1';
 $route[$routes->gallery_album . '/(:num)']['GET'] = 'home_controller/gallery_album/$1';
